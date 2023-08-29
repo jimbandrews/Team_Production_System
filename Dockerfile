@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:alpine AS builder
 
 WORKDIR /momentomori
 
@@ -6,12 +6,17 @@ COPY package.json package.json
 
 COPY package-lock.json package-lock.json
 
-RUN npm install
-
 COPY public/ public
 
 COPY src/ src
 
-EXPOSE 3000
+RUN npm install
 
-CMD npm start
+RUN npm run build
+
+
+FROM nginx:stable-alpine
+WORKDIR /usr/share/nginx/html
+RUN rm -rf ./*
+COPY --from=builder /momentomori/build .
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
