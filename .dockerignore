@@ -1,0 +1,7 @@
+Dockerfile
+*.md
+.gitignore
+cypress/
+cypress.config.js
+build/
+.github/

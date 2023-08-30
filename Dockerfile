@@ -1,4 +1,4 @@
-# Dockerfile and comments written with help from the article:
+# Dockerfile and comments written with help from this blog post:
 # https://typeofnan.dev/how-to-serve-a-react-app-with-nginx-in-docker/
 
 # Multi-stage Dockerfile
@@ -10,10 +10,7 @@ FROM node:alpine AS builder
 # Set working directory
 WORKDIR /momentum-mentors
 # Copy app files to working dir in image
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-COPY public/ public
-COPY src/ src
+COPY . .
 # Install node modules and build assets
 RUN npm install && npm run build
 
