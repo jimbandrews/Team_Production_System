@@ -143,67 +143,66 @@ export default function EditProfile({ token, pk, setAuth }) {
       formData.append("profile_photo", profilePhoto);
     }
 
-    client
-      .patch(
-        '/myprofile/',
-        formData && formData, // Only pass form data if it exists
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "multipart/form-data",
+    client.patch(
+      '/myprofile/',
+      formData && formData, // Only pass form data if it exists
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    )
+    .then((res) => {
+      if (skills && aboutMe) {
+        client.patch(
+          '/mentorinfoupdate/',
+          {
+            skills: skills,
+            about_me: aboutMe,
           },
-        }
-      )
-      .then((res) => {
-        if (skills && aboutMe) {
-          client.patch(
-            '/mentorinfoupdate/',
-            {
-              skills: skills,
-              about_me: aboutMe,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
             },
-            {
-              headers: {
-                Authorization: `Token ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-        } else if (teamNumber) {
-          client.patch(
-            '/menteeinfoupdate/',
-            {
-              team_number: teamNumber,
+          }
+        );
+      } else if (teamNumber) {
+        client.patch(
+          '/menteeinfoupdate/',
+          {
+            team_number: teamNumber,
+          },
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
             },
-            {
-              headers: {
-                Authorization: `Token ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-        }
-      })
+          }
+        );
+      }
+    })
 
-      .then((res) => {
-        // const token = res.data.auth_token;
-        client
-          .get('/myprofile/', {
-            headers: { Authorization: `Token ${token}` },
-          })
-          .then((res) => {
-            setLoading(false);
-            navigate("/profile");
-          })
-          .catch((e) => {
-            setLoading(false);
-            setError(e.message);
-          });
-      })
-      .catch((e) => {
-        setLoading(false);
-        setError(e.message);
-      });
+    .then((res) => {
+      // const token = res.data.auth_token;
+      client
+        .get('/myprofile/', {
+          headers: { Authorization: `Token ${token}` },
+        })
+        .then((res) => {
+          setLoading(false);
+          navigate("/profile");
+        })
+        .catch((e) => {
+          setLoading(false);
+          setError(e.message);
+        });
+    })
+    .catch((e) => {
+      setLoading(false);
+      setError(e.message);
+    });
   };
 
   return (
