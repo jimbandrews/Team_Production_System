@@ -52,51 +52,67 @@ export default function EditProfile({ token, pk, setAuth }) {
     "Vue.js",
   ];
 
-  useEffect(() => {
-    setLoading(true);
-    axios
-      .get(`${process.env.REACT_APP_BE_URL}/myprofile/`, {
-        headers: { Authorization: `Token ${token}` },
-      })
-      .then((res) => {
-        setLoading(false);
-        setOriginalProfile(res.data);
-        setFirstName(res.data.first_name);
-        setLastName(res.data.last_name);
-        setPhoneNumber(res.data.phone_number);
-        setIsMentor(res.data.is_mentor);
-        setIsMentee(res.data.is_mentee);
+  const client = axios.create({
+    baseURL: `${ process.env.REACT_APP_BE_URL }`
+  });
 
-        if (res.data.is_mentor) {
-          axios
-            .get(`${process.env.REACT_APP_BE_URL}/mentorinfo/`, {
-              headers: { Authorization: `Token ${token}` },
-            })
-            .then((res) => {
-              setSkills(res.data[0].skills);
-              setAboutMe(res.data[0].about_me);
-            })
-            .catch((e) => {
-              console.error(e);
-            });
-        } else if (res.data.is_mentee) {
-          axios
-            .get(`${process.env.REACT_APP_BE_URL}/menteeinfo/`, {
-              headers: { Authorization: `Token ${token}` },
-            })
-            .then((res) => {
-              setTeamNumber(res.data[0].team_number);
-            })
-            .catch((e) => {
-              console.error(e);
-            });
-        }
-      })
-      .catch((e) => {
+  useEffect(() => {
+    const getMentorInfo = async () => {
+      try {
+        const mentorInfo = await client.get(
+          '/mentorinfo/',
+          { headers: { Authorization: `Token ${ token }` } },
+        );
+  
+        setSkills(mentorInfo.data[0].skills);
+        setAboutMe(mentorInfo.data[0].skills);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    const getMenteeInfo = async () => {
+      try {
+        const menteeInfo = await client.get(
+          '/menteeinfo/',
+          { headers: { Authorization: `Token ${ token }` } },
+        );
+
+        setTeamNumber(menteeInfo.data[0].team_number);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    const getProfileData = async () => {
+      try {
+        const profileData = await client.get(
+          '/myprofile/',
+          { headers: { Authorization: `Token ${ token }` } },
+        );
+  
         setLoading(false);
-        setError(e.message);
-      });
-  }, [token]);
+        setOriginalProfile(profileData.data);
+        setFirstName(profileData.data.first_name);
+        setLastName(profileData.data.last_name);
+        setPhoneNumber(profileData.data.phone_number);
+        setIsMentor(profileData.data.is_mentor);
+        setIsMentee(profileData.data.is_mentee);
+
+        if (profileData.data.is_mentor) {
+          getMentorInfo();
+        } else if (profileData.data.is_mentee) {
+          getMenteeInfo();
+        }
+      } catch (err) {
+        setLoading(false);
+        setError(err.message);
+      }
+    }
+
+    setLoading(true);
+    getProfileData();
+  }, [token, client]);
 
   const handleChange = (event) => {
     const { value: selectedValue } = event.target;
@@ -127,9 +143,9 @@ export default function EditProfile({ token, pk, setAuth }) {
       formData.append("profile_photo", profilePhoto);
     }
 
-    axios
+    client
       .patch(
-        `${process.env.REACT_APP_BE_URL}/myprofile/`,
+        '/myprofile/',
         formData && formData, // Only pass form data if it exists
         {
           headers: {
@@ -140,8 +156,8 @@ export default function EditProfile({ token, pk, setAuth }) {
       )
       .then((res) => {
         if (skills && aboutMe) {
-          axios.patch(
-            `${process.env.REACT_APP_BE_URL}/mentorinfoupdate/`,
+          client.patch(
+            '/mentorinfoupdate/',
             {
               skills: skills,
               about_me: aboutMe,
@@ -154,8 +170,8 @@ export default function EditProfile({ token, pk, setAuth }) {
             }
           );
         } else if (teamNumber) {
-          axios.patch(
-            `${process.env.REACT_APP_BE_URL}/menteeinfoupdate/`,
+          client.patch(
+            '/menteeinfoupdate/',
             {
               team_number: teamNumber,
             },
@@ -171,8 +187,8 @@ export default function EditProfile({ token, pk, setAuth }) {
 
       .then((res) => {
         // const token = res.data.auth_token;
-        axios
-          .get(`${process.env.REACT_APP_BE_URL}/myprofile/`, {
+        client
+          .get('/myprofile/', {
             headers: { Authorization: `Token ${token}` },
           })
           .then((res) => {
