@@ -75,6 +75,7 @@ export default function EditProfile({ token, pk, setAuth }) {
             .then((res) => {
               setSkills(res.data[0].skills);
               setAboutMe(res.data[0].about_me);
+              setTeamNumber(res.data[0].team_number);
             })
             .catch((e) => {
               console.error(e);
@@ -139,12 +140,13 @@ export default function EditProfile({ token, pk, setAuth }) {
         }
       )
       .then((res) => {
-        if (skills && aboutMe) {
+        if (isMentor) {
           axios.patch(
             `${process.env.REACT_APP_BE_URL}/mentorinfoupdate/`,
             {
               skills: skills,
               about_me: aboutMe,
+              team_number: teamNumber,
             },
             {
               headers: {
@@ -153,7 +155,7 @@ export default function EditProfile({ token, pk, setAuth }) {
               },
             }
           );
-        } else if (teamNumber) {
+        } else if (isMentee) {
           axios.patch(
             `${process.env.REACT_APP_BE_URL}/menteeinfoupdate/`,
             {
@@ -275,19 +277,17 @@ export default function EditProfile({ token, pk, setAuth }) {
             </Stack>
           )}
 
-          {isMentee && (
-            <Stack item="true" className="field">
-              <TextField
-                label="Team Number"
-                placeholder={teamNumber !== "" ? teamNumber : "Team Number"}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                value={teamNumber}
-                onChange={(e) => setTeamNumber(e.target.value)}
-              ></TextField>
-            </Stack>
-          )}
+          <Stack item="true" className="field">
+            <TextField
+              label="Team Number"
+              placeholder={teamNumber !== "" ? teamNumber : "Team Number"}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              value={teamNumber}
+              onChange={(e) => setTeamNumber(e.target.value)}
+            ></TextField>
+          </Stack>
 
           <Stack item="true" className="button--edit-profile">
             {loading ? (
